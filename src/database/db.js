@@ -1,13 +1,24 @@
 import Database from "better-sqlite3";
+import path from "path";
+import fs from "fs";
 
 /**
- * 📦 Create / open database file
+ * 📁 Ensure /data directory exists
  */
-const db = new Database("birthday.db");
+const DB_DIR = "/data";
+const DB_PATH = path.join(DB_DIR, "birthday.db");
+
+if (!fs.existsSync(DB_DIR)) {
+  fs.mkdirSync(DB_DIR, { recursive: true });
+}
+
+/**
+ * 📦 Create / open database
+ */
+const db = new Database(DB_PATH);
 
 /**
  * 🧑 USERS TABLE
- * Each Telegram user stored once
  */
 db.prepare(`
 CREATE TABLE IF NOT EXISTS users (
@@ -19,15 +30,14 @@ CREATE TABLE IF NOT EXISTS users (
 
 /**
  * 🎂 BIRTHDAYS TABLE
- * ALL users share same table → filtered by user_id
  */
 db.prepare(`
-CREATE TABLE IF NOT EXISTS job_queue (
+CREATE TABLE IF NOT EXISTS birthdays (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER,
-  message TEXT,
-  status TEXT DEFAULT 'pending',
-  attempts INTEGER DEFAULT 0,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  dob TEXT NOT NULL,
+  note TEXT,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 )
 `).run();
