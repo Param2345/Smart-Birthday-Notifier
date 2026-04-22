@@ -12,7 +12,6 @@
   "type": "module",
   "dependencies": {
     "better-sqlite3": "^12.9.0",
-    "canvas": "^3.2.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.10.1",
