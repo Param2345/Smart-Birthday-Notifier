@@ -10,6 +10,7 @@ import { upcomingHandler } from "./handlers/upcoming.js";
 import { deleteHandler } from "./handlers/delete.js";
 
 import { StateManager } from "./utils/stateManager.js";
+import { generateBirthdayCard } from "./utils/cardGenerator.js";
 
 export const bot = new Telegraf(config.BOT_TOKEN);
 
@@ -97,11 +98,22 @@ bot.on("callback_query", async (ctx) => {
         }
 
         /**
-         * 🎉 SIMPLE WISH (NO IMAGE - CLOUD SAFE)
+         * 🎉 IMAGE BIRTHDAY CARD (NO CANVAS)
          */
         if (data.startsWith("wish_")) {
             const name = data.replace("wish_", "");
-            return await ctx.reply(`🎉 Happy Birthday ${name}! 🎂`);
+
+            try {
+                const imageUrl = generateBirthdayCard(name);
+
+                return await ctx.replyWithPhoto(imageUrl, {
+                    caption: `🎉 Happy Birthday ${name}! 🎂`
+                });
+
+            } catch (err) {
+                console.error("Image Error:", err);
+                return await ctx.reply(`🎉 Happy Birthday ${name}! 🎂`);
+            }
         }
 
     } catch (err) {
