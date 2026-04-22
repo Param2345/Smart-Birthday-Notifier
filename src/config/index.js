@@ -7,18 +7,18 @@ dotenv.config();
  */
 export const config = {
     BOT_TOKEN: process.env.BOT_TOKEN,
-    BASE_URL: process.env.BASE_URL,
     PORT: process.env.PORT || 3000,
-    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || null
 };
 
 /**
- * ❗ VALIDATION (VERY IMPORTANT)
+ * ❗ VALIDATION (ONLY WHAT YOU NEED)
  */
 if (!config.BOT_TOKEN) {
     throw new Error("❌ BOT_TOKEN is missing in environment variables");
 }
 
-if (!config.BASE_URL) {
-    console.warn("⚠️ BASE_URL is missing (required for webhook)");
-}
+/**
+ * ℹ️ OPTIONAL LOG
+ */
+console.log("✅ Config loaded successfully");
