@@ -4,6 +4,10 @@ import { config } from "../config/index.js";
 import { logger } from "../utils/logger.js";
 
 const app = express();
+
+/**
+ * ✅ REQUIRED FOR TELEGRAM
+ */
 app.use(express.json());
 
 /**
@@ -25,23 +29,36 @@ app.get("/health", (req, res) => {
 });
 
 /**
- * 🤖 TELEGRAM WEBHOOK
+ * 🤖 TELEGRAM WEBHOOK (FIXED)
  */
-app.use(bot.webhookCallback("/bot"));
+app.use("/bot", bot.webhookCallback("/bot"));
 
 /**
- * 🔗 SAFE WEBHOOK SETTER (WITH RETRY SAFETY)
+ * 🔁 SAFE WEBHOOK SETTER (WITH RETRY)
  */
-const setupWebhook = async () => {
+const setupWebhook = async (retries = 3) => {
     try {
-        logger.info("🔄 Setting up webhook...");
+        if (!config.BASE_URL) {
+            throw new Error("BASE_URL is not defined");
+        }
+
+        const webhookUrl = `${config.BASE_URL}/bot`;
+
+        logger.info(`🔄 Setting webhook → ${webhookUrl}`);
 
         await bot.telegram.deleteWebhook();
-        await bot.telegram.setWebhook(`${config.BASE_URL}/bot`);
+        await bot.telegram.setWebhook(webhookUrl);
 
         logger.info("✅ Webhook successfully set");
     } catch (err) {
         logger.error("❌ Webhook setup failed:", err);
+
+        if (retries > 0) {
+            logger.warn(`Retrying webhook setup... (${retries})`);
+            await new Promise(res => setTimeout(res, 3000));
+            return setupWebhook(retries - 1);
+        }
+
         throw err;
     }
 };
@@ -51,8 +68,10 @@ const setupWebhook = async () => {
  */
 const startServer = async () => {
     try {
-        app.listen(config.PORT, async () => {
-            logger.info(`🌍 Server running on port ${config.PORT}`);
+        const PORT = config.PORT || 3000;
+
+        app.listen(PORT, async () => {
+            logger.info(`🌍 Server running on port ${PORT}`);
 
             await setupWebhook();
         });
